@@ -1,13 +1,6 @@
 package Network.Client;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Client implements IRpcCallback{
     JavaNetwork network;
