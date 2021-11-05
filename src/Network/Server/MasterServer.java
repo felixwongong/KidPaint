@@ -80,7 +80,7 @@ public class MasterServer {
             }
             Thread t = new Thread(() -> {
                 try {
-                    OutputString(out, "Room (" + name + ") has been created successfully");
+                    System.out.println("Room (" + name + ") has been created successfully");
                     newServer.start();
                 } catch (IOException e) {
                     System.err.println("Server " + name + " down");
@@ -111,6 +111,7 @@ public class MasterServer {
         try {
             out.writeInt(len);
             out.write(outStr.getBytes(), 0, len);
+            out.flush();
         } catch (IOException e) {
             System.out.println("String output error");
         }

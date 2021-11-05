@@ -25,7 +25,7 @@ public class JavaView {
         Class rpcClass = object.getClass();
         String header = rpcClass.getName() + "_" + methodName;
         try {
-            Method rpcMethod = rpcClass.getDeclaredMethod(methodName);
+            Method rpcMethod = rpcClass.getDeclaredMethod(methodName, Object.class);
             ViewStructs viewStructs = new ViewStructs(object, rpcMethod);
             if(rpcMethodDictionary.get(header) != null){
                 System.out.println("Rpc method has already in list");
@@ -38,13 +38,22 @@ public class JavaView {
     }
 
     protected void callRpc(Object object, String methodName) {
+        this.callRpc(object, methodName, null);
+    }
+
+    protected void callRpc(Object object, String methodName, Object args) {
         Class rpcClass = object.getClass();
         String header = rpcClass.getName() + "_" + methodName;
 
         ViewStructs viewStructs = rpcMethodDictionary.get(header);
         Method rpcMethod = viewStructs.viewMethod;
         try {
-            rpcMethod.invoke(viewStructs.viewObject);
+            if(args == null) {
+                rpcMethod.invoke(viewStructs.viewObject);
+            }else {
+                rpcMethod.invoke(viewStructs.viewObject, args);
+            }
+            rpcMethod.invoke(viewStructs.viewObject, args);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {

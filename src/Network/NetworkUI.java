@@ -51,7 +51,7 @@ public class NetworkUI extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    client.createRoom(roomName.getText());
+                    client.createRoom(roomName.getText(), username.getText());
                 } catch (IOException ioException) {
                     ioException.printStackTrace();
                 }

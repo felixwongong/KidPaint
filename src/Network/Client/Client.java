@@ -3,6 +3,10 @@ package Network.Client;
 import java.io.IOException;
 
 public class Client implements IRpcCallback{
+    public static void main(String[] args) throws IOException {
+        Client c = new Client();
+    }
+
     JavaNetwork network;
 
     private void addRpcMethod(){
@@ -11,17 +15,15 @@ public class Client implements IRpcCallback{
 
     private Client(String server, int port) throws IOException {
         this.network = JavaNetwork.getInstance(server, port);
-        addRpcMethod();
-
     }
 
     public Client() throws IOException {
         this("127.0.0.1", 12345);
     }
 
-    public void createRoom(String roomName) throws IOException {
-        System.out.println(this.network);
-        this.network.createRoom(roomName);
+    public void createRoom(String roomName, String playerName) throws IOException {
+        this.network.createRoom(roomName, playerName);
+        this.network.joinRoom(roomName, playerName);
     }
 
     public void joinRoom(String roomName, String playerName) throws IOException {
@@ -29,7 +31,7 @@ public class Client implements IRpcCallback{
     }
 
 
-    public void rpcMethod() {
-        System.out.println("rpc call");
+    public void rpcMethod(String rpcArg) {
+        System.out.println("rpc call: " + rpcArg);
     }
 }

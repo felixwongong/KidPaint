@@ -35,7 +35,7 @@ public class ByteArrayParser {
         return data;
     }
 
-    public static List byte2List(byte[] data) throws IOException, ClassNotFoundException {
+    public static List byte2List(byte[] data) throws IOException {
         List<Object> objectList = new ArrayList<>();
 
         ByteArrayInputStream bais = new ByteArrayInputStream(data);
@@ -44,7 +44,12 @@ public class ByteArrayParser {
             int len = in.readInt();
             byte[] buffer = new byte[len];
             in.read(buffer, 0, len);
-            Object obj = byte2Object(buffer);
+            Object obj = null;
+            try {
+                obj = byte2Object(buffer);
+            } catch (ClassNotFoundException e) {
+                System.out.println("Parser cannot parse to object");
+            }
             objectList.add(obj);
         }
         return objectList;

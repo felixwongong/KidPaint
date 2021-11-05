@@ -4,17 +4,20 @@ import Network.Client.Player;
 import util.ByteArrayParser;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class RoomServer {
     ServerSocket srvSocket;
     HashMap<String, Socket> cSocketList = new HashMap<>();
+    List<Object> playerList = new ArrayList<>();
 
     protected RoomServer() throws IOException {
         srvSocket = new ServerSocket(0, 10, InetAddress.getLocalHost());
@@ -25,27 +28,37 @@ public class RoomServer {
             System.out.printf("Room server listening at port %d...\n", getPort());
             Socket cSocket = srvSocket.accept();
             DataInputStream in = new DataInputStream(cSocket.getInputStream());
-            DataInputStream out = new DataInputStream(cSocket.getInputStream());
+            DataOutputStream out = new DataOutputStream(cSocket.getOutputStream());
 
-            int nameLen = in.readInt();
-            byte[] nameBuffer = new byte[nameLen];
-            in.read(nameBuffer, 0, nameLen);
-
-            try {
-                List playerList = ByteArrayParser.byte2List(nameBuffer);
-                for(Object player: playerList) {
-                    Player p = (Player) player;
-                    System.out.println(p.name);
-                }
-                System.out.println(playerList);
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
+            UpdatePlayerList(in, out);
 
             synchronized (cSocketList) {
                 cSocketList.put("no-name", cSocket);
             }
         }
+    }
+
+    private void UpdatePlayerList(DataInputStream in, DataOutputStream out) {
+        Thread t = new Thread(()-> {
+            try {
+                int len = in.readInt();
+                byte[] playerBuffer = new byte[len];
+                in.read(playerBuffer, 0, len);
+                Object player = ByteArrayParser.byte2Object(playerBuffer);
+                playerList.add(player);
+
+
+                byte[] playerListByte = ByteArrayParser.list2Byte(playerList);
+
+                out.writeInt(playerListByte.length);
+                out.write(playerListByte, 0, playerListByte.length);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        t.start();
     }
 
     protected int getPort() {

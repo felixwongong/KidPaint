@@ -36,8 +36,8 @@ public class JavaNetwork {
         this.PlayerList = new ArrayList<>();
     }
 
-    protected void createRoom(String name) throws IOException {
-        String cmd = "/createRoom " + name;
+    protected void createRoom(String roomName, String playerName) throws IOException {
+        String cmd = "/createRoom " + roomName;
         int cmdLen = cmd.length();
         this.out.writeInt(cmdLen);
         this.out.write(cmd.getBytes(), 0, cmdLen);
@@ -69,12 +69,21 @@ public class JavaNetwork {
     }
 
     private void updateServerPlayerList(String playerName) throws IOException {
-        PlayerList.add(new Player(PlayerList.size(), playerName));
+        Player player = new Player(PlayerList.size(), playerName);
 
-        byte[] playerListByte = ByteArrayParser.list2Byte(PlayerList);
-        this.out.writeInt(playerListByte.length);
-        this.out.write(playerListByte, 0, playerListByte.length);
+        byte[] playerByte = ByteArrayParser.object2Byte(player);
+        this.out.writeInt(playerByte.length);
+        this.out.write(playerByte, 0, playerByte.length);
+
+        int playerListLen = in.readInt();
+        byte[] playerListBuffer = new byte[playerListLen];
+        in.read(playerListBuffer, 0, playerListLen);
+        PlayerList = ByteArrayParser.byte2List(playerListBuffer);
+        for(Player p: PlayerList) {
+            System.out.println(p.name);
+        }
     }
+
 
     protected void networkCallback() {
         Thread t = new Thread(() -> {
