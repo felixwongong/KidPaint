@@ -18,6 +18,7 @@ public class JavaNetwork {
     private DataOutputStream out;
 
     List<Player> PlayerList;
+    public List<Room> RoomList;
 
     public static JavaNetwork getInstance(String server, int port) throws IOException {
         if(instance == null) {
@@ -29,11 +30,27 @@ public class JavaNetwork {
     }
 
     private JavaNetwork(Socket cSocket) throws IOException {
-        this.view = new JavaView();
+        //need to remove state
         this.cSocket = cSocket;
+        this.view = new JavaView();
+        this.PlayerList = new ArrayList<>();
+        this.RoomList = getRoomsFromServer();
+    }
+
+    private List<Room> getRoomsFromServer() throws IOException {
         this.in = new DataInputStream(cSocket.getInputStream());
         this.out = new DataOutputStream(cSocket.getOutputStream());
-        this.PlayerList = new ArrayList<>();
+
+        String cmd = "/getRoomList";
+        this.out.writeInt(cmd.length());
+        this.out.write(cmd.getBytes(), 0, cmd.length());
+
+        int len = this.in.readInt();
+        byte[] buffer = new byte[len];
+        this.in.read(buffer, 0, len);
+        List<Room> rooms = ByteArrayParser.byte2List(buffer);
+        System.out.println(rooms);
+        return rooms;
     }
 
     protected void createRoom(String roomName, String playerName) throws IOException {

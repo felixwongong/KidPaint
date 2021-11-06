@@ -7,7 +7,7 @@ public class Client implements IRpcCallback{
         Client c = new Client();
     }
 
-    JavaNetwork network;
+    public JavaNetwork network;
 
     private void addRpcMethod(){
         network.view.addRpc(this, "rpcMethod");
@@ -29,7 +29,6 @@ public class Client implements IRpcCallback{
     public void joinRoom(String roomName, String playerName) throws IOException {
         this.network.joinRoom(roomName, playerName);
     }
-
 
     public void rpcMethod(String rpcArg) {
         System.out.println("rpc call: " + rpcArg);
