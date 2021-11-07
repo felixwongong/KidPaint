@@ -22,12 +22,12 @@ public class Client implements IRpcCallback{
     }
 
     public void createRoom(String roomName, String playerName) throws IOException {
-        this.network.createRoom(roomName, playerName);
-        this.network.joinRoom(roomName, playerName);
+//        this.network.createRoom(roomName, playerName);
+//        this.network.joinRoom(roomName, playerName);
     }
 
     public void joinRoom(String roomName, String playerName) throws IOException {
-        this.network.joinRoom(roomName, playerName);
+//        this.network.joinRoom(roomName, playerName);
     }
 
     public void rpcMethod(String rpcArg) {

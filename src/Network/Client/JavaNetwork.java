@@ -13,46 +13,62 @@ import java.util.Scanner;
 public class JavaNetwork {
     private static JavaNetwork instance = null;
     public JavaView view;
-    private Socket cSocket;
-    private DataInputStream in;
-    private DataOutputStream out;
 
     List<Player> PlayerList;
     public List<Room> RoomList;
 
     public static JavaNetwork getInstance(String server, int port) throws IOException {
         if(instance == null) {
-            Socket cSocket = new Socket(server, port);
-            instance = new JavaNetwork(cSocket);
+            instance = new JavaNetwork(server, port);
             return instance;
         }
         return instance;
     }
 
-    private JavaNetwork(Socket cSocket) throws IOException {
+    private JavaNetwork(String server, int port) throws IOException {
         //need to remove state
-        this.cSocket = cSocket;
         this.view = new JavaView();
         this.PlayerList = new ArrayList<>();
-        this.RoomList = getRoomsFromServer();
+        DataStream masterStream = connectToMaster(server, port);
+        this.RoomList = getRoomsFromServer(masterStream);
     }
 
-    private List<Room> getRoomsFromServer() throws IOException {
-        this.in = new DataInputStream(cSocket.getInputStream());
-        this.out = new DataOutputStream(cSocket.getOutputStream());
+    private DataStream connectToMaster(String server, int port) {
+        try {
+            Socket cSocket = new Socket(server, port);
+            DataInputStream in = new DataInputStream(cSocket.getInputStream());
+            DataOutputStream out = new DataOutputStream(cSocket.getOutputStream());
+            return new DataStream(in, out);
+        } catch (IOException e) {
+            System.out.println("Error: Connection to master");
+        }
+        return null;
+    }
+
+    private List<Room> getRoomsFromServer(DataStream stream) throws IOException {
+        DataInputStream in = stream.in;
+        DataOutputStream out = stream.out;
 
         String cmd = "/getRoomList";
-        this.out.writeInt(cmd.length());
-        this.out.write(cmd.getBytes(), 0, cmd.length());
+        out.writeInt(cmd.length());
+        out.write(cmd.getBytes(), 0, cmd.length());
 
-        int len = this.in.readInt();
+        int len = in.readInt();
         byte[] buffer = new byte[len];
-        this.in.read(buffer, 0, len);
+        in.read(buffer, 0, len);
         List<Room> rooms = ByteArrayParser.byte2List(buffer);
         System.out.println(rooms);
         return rooms;
     }
-
+    private class DataStream {
+        DataInputStream in;
+        DataOutputStream out;
+        DataStream(DataInputStream in, DataOutputStream out) {
+            this.in = in;
+            this.out = out;
+        }
+    }
+/*
     protected void createRoom(String roomName, String playerName) throws IOException {
         String cmd = "/createRoom " + roomName;
         int cmdLen = cmd.length();
@@ -132,5 +148,5 @@ public class JavaNetwork {
             out.write(str.getBytes(), 0, str.length());
         }
     }
-
+*/
 }
