@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class JavaNetwork {
     private static JavaNetwork instance = null;
@@ -26,26 +25,25 @@ public class JavaNetwork {
     }
 
     private JavaNetwork(String server, int port) throws IOException {
-        //need to remove state
         this.view = new JavaView();
         this.PlayerList = new ArrayList<>();
-        DataStream masterStream = connectToMaster(server, port);
+        SocketStream masterStream = connectToServer(server, port);
         this.RoomList = getRoomsFromServer(masterStream);
     }
 
-    private DataStream connectToMaster(String server, int port) {
+    private SocketStream connectToServer(String server, int port) {
         try {
             Socket cSocket = new Socket(server, port);
             DataInputStream in = new DataInputStream(cSocket.getInputStream());
             DataOutputStream out = new DataOutputStream(cSocket.getOutputStream());
-            return new DataStream(in, out);
+            return new SocketStream(cSocket, in, out);
         } catch (IOException e) {
             System.out.println("Error: Connection to master");
         }
         return null;
     }
 
-    private List<Room> getRoomsFromServer(DataStream stream) throws IOException {
+    private List<Room> getRoomsFromServer(SocketStream stream) throws IOException {
         DataInputStream in = stream.in;
         DataOutputStream out = stream.out;
 
@@ -58,12 +56,21 @@ public class JavaNetwork {
         in.read(buffer, 0, len);
         List<Room> rooms = ByteArrayParser.byte2List(buffer);
         System.out.println(rooms);
+        stream.socket.close();
         return rooms;
     }
-    private class DataStream {
+
+    protected void joinRoom(String server, int port) {
+        SocketStream roomStream = connectToServer(server, port);
+        
+    }
+
+    private class SocketStream {
+        Socket socket;
         DataInputStream in;
         DataOutputStream out;
-        DataStream(DataInputStream in, DataOutputStream out) {
+        SocketStream(Socket socket, DataInputStream in, DataOutputStream out) {
+            this.socket = socket;
             this.in = in;
             this.out = out;
         }
